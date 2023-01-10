@@ -1,15 +1,15 @@
 const { sequelize, connect } = require('./db');
-const { stringify } = require('csv-stringify/sync');
-const fs = require('fs');
 const { User, FiatLog, UserBalance } = sequelize.models;
 const { Op } = require('sequelize');
-const { formatDate } = require('./utils');
+const { formatDateDime, writeToCsv, formatDate } = require('./utils');
+const _ = require('lodash');
 
 // connect();
 
 async function main() {
-    await fiatLog();
-    await userBalance();
+    // await fiatLog();
+    // await userBalance();
+    await userBalanceByDay();
     console.log('Finished');
 }
 
@@ -35,11 +35,10 @@ async function fiatLog() {
             Email: user.email,
             Amount: item.amount,
             Type: mapFiatTypeName(item.type),
-            CreatedAt: formatDate(item.created_at),
+            CreatedAt: formatDateDime(item.created_at),
         });
     }
-    const csvStr = stringify(items, {header: true});
-    fs.writeFileSync('./FiatLog.csv', csvStr);
+    writeToCsv('./FiatLog.csv', items);
 }
 
 async function userBalance() {
@@ -58,8 +57,48 @@ async function userBalance() {
             TotalConsume: totalConsume
         });
     }
-    const csvStr = stringify(items, {header: true});
-    fs.writeFileSync('./UserBalance.csv', csvStr);
+    writeToCsv('./UserBalance.csv', items);
+}
+
+async function userBalanceByDay() {
+    let users = await getUsers();
+    const items = [];
+    for(let uid in users) {
+        let user = users[uid];
+        const count = await FiatLog.count({where: {user_id: user.id}})
+        if (count === 0) continue;
+        let logs = await FiatLog.findAll({where: {user_id: user.id, amount: {[Op.ne]: 0}}});
+        logs = logs.map(log => ({
+            user_id: log.user_id,
+            amount: log.amount,
+            type: log.type,
+            created_at: formatDateDime(log.created_at),
+            created_date: formatDate(log.created_at),
+        }));
+        let grouped = _.groupBy(logs, 'created_date');
+        let groupedInArray = [];
+        for(let date in grouped) {
+            groupedInArray.push({
+                date,
+                logs: grouped[date],
+            });
+        }
+        groupedInArray = _.orderBy(groupedInArray, ['date'], ['asc']);
+        let balance = 0;
+        for (let item of groupedInArray) {
+            let {deposit, charge} = sumDepositAndCharge(item.logs);
+            balance = balance + deposit + charge;
+            items.push({
+                Date: item.date,
+                UserId: user.id,
+                Email: user.email,
+                Deposit: deposit,
+                Charge: charge,
+                Balance: balance,
+            });
+        }
+    }
+    writeToCsv('./UserBalanceInDay.csv', items);
 }
 
 function mapFiatTypeName(type) {
@@ -77,4 +116,17 @@ function mapFiatTypeName(type) {
         default:
             return 'Other';
     }
+}
+
+function sumDepositAndCharge(items) {
+    let deposit = 0;
+    let charge = 0;
+    for (let item of items) {
+        if (item.type === 1) {
+            deposit += item.amount;
+        } else {
+            charge += item.amount;
+        }
+    }
+    return {deposit, charge};
 }

@@ -19,6 +19,7 @@
   "homepage": "https://github.com/nft-rainbow/scripts#readme",
   "dependencies": {
     "csv-stringify": "^6.2.3",
+    "lodash": "^4.17.21",
     "mysql2": "^2.3.3",
     "sequelize": "^6.28.0"
   }
