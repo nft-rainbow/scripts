@@ -45,7 +45,7 @@ async function fiatLog() {
             Type: mapFiatTypeName(item.type),
             CreatedAt: formatDateDime(item.created_at),
             Address: item.meta?.address,
-            WxOrderNo: depositOrder.trade_no,
+            WxOrderNo: depositOrder?.trade_no,
         });
     }
     writeToCsv('./FiatLog.csv', items);
