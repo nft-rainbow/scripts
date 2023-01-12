@@ -116,7 +116,7 @@ function mapFiatTypeName(type) {
             return 'Pay Gas';
         case 4:
             return 'Pay Storage';
-        case 4:
+        case 5:
             return 'Pay API';
         default:
             return 'Other';
