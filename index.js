@@ -1,5 +1,5 @@
 const { sequelize, connect } = require('./db');
-const { User, FiatLog, UserBalance } = sequelize.models;
+const { User, FiatLog, UserBalance, DepositOrder } = sequelize.models;
 const { Op } = require('sequelize');
 const { formatDateDime, writeToCsv, formatDate } = require('./utils');
 const _ = require('lodash');
@@ -34,6 +34,10 @@ async function fiatLog() {
     let items = [];
     for (let item of fiatLogs) {
         let user = users[item.user_id];
+        let depositOrder;
+        if (item.type === 1) {
+            depositOrder = await DepositOrder.findByPk(item.meta.deposit_order_id);
+        }
         items.push({
             UserId: item.user_id,
             Email: user.email,
@@ -41,6 +45,7 @@ async function fiatLog() {
             Type: mapFiatTypeName(item.type),
             CreatedAt: formatDateDime(item.created_at),
             Address: item.meta?.address,
+            WxOrderNo: depositOrder.trade_no,
         });
     }
     writeToCsv('./FiatLog.csv', items);

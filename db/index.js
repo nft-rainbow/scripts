@@ -3,6 +3,7 @@ const { db } = require('../config.json');
 const defineUser = require('./User');
 const defineFiatLog = require('./FiatLog');
 const defineUserBalance = require('./UserBalance');
+const defineDepositOrder = require('./DepositOrder');
 
 const sequelize = new Sequelize(db.database, db.user, db.password, {
     host: db.host,
@@ -14,6 +15,7 @@ const sequelize = new Sequelize(db.database, db.user, db.password, {
 defineUser(sequelize);
 defineFiatLog(sequelize);
 defineUserBalance(sequelize);
+defineDepositOrder(sequelize);
 
 async function connect() {
     try {
