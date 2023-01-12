@@ -8,6 +8,7 @@ const sequelize = new Sequelize(db.database, db.user, db.password, {
     host: db.host,
     port: db.port,
     dialect: 'mysql',
+    logging: false,
 });
 
 defineUser(sequelize);

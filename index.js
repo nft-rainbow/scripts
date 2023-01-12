@@ -7,9 +7,9 @@ const _ = require('lodash');
 // connect();
 
 async function main() {
-    // await fiatLog();
+    await fiatLog();
     // await userBalance();
-    await userBalanceByDay();
+    // await userBalanceByDay();
     console.log('Finished');
 }
 
@@ -24,6 +24,10 @@ async function getUsers() {
     return usersMap;
 }
 
+/**
+ 22/12/1 0:00 - 22/12/31 23:59:59 的明细
+    字段：扣费日期，扣费金额，UserID，Email，消费项目（若有），用户合约地址（若有）
+ */
 async function fiatLog() {
     let users = await getUsers();
     let fiatLogs = await FiatLog.findAll({where: {amount: {[Op.ne]: 0}}});
@@ -36,6 +40,7 @@ async function fiatLog() {
             Amount: item.amount,
             Type: mapFiatTypeName(item.type),
             CreatedAt: formatDateDime(item.created_at),
+            Address: item.meta?.address,
         });
     }
     writeToCsv('./FiatLog.csv', items);

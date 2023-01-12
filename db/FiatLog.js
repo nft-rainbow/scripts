@@ -11,6 +11,9 @@ module.exports = function(sequelize) {
         type: {
             type: DataTypes.INTEGER,
         },
+        meta: {
+            type: DataTypes.JSON,
+        },
         created_at: {
           type: DataTypes.DATE
         },
