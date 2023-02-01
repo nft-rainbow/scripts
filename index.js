@@ -1,7 +1,7 @@
 const { sequelize, connect } = require('./db');
 const { User, FiatLog, UserBalance, DepositOrder } = sequelize.models;
 const { Op } = require('sequelize');
-const { formatDateDime, writeToCsv, formatDate } = require('./utils');
+const { formatDateDime, writeToCsv, formatDate, currentMonth, lastMonth } = require('./utils');
 const _ = require('lodash');
 
 // connect();
@@ -30,7 +30,15 @@ async function getUsers() {
  */
 async function fiatLog() {
     let users = await getUsers();
-    let fiatLogs = await FiatLog.findAll({where: {amount: {[Op.ne]: 0}}});
+    let fiatLogs = await FiatLog.findAll({
+        where: {
+            amount: {[Op.ne]: 0},
+            created_at: {
+                [Op.lt]: new Date(currentMonth()),
+                [Op.gt]: new Date(lastMonth()),
+            }
+        }
+    });
     let items = [];
     for (let item of fiatLogs) {
         let user = users[item.user_id];
