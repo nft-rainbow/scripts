@@ -15,10 +15,10 @@ module.exports = function(sequelize) {
             type: DataTypes.INTEGER,
         },
         description: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.STRING,
         },
         trade_no: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.STRING,
         },
         meta: {
             type: DataTypes.JSON,
