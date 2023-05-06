@@ -1,24 +1,17 @@
 const { sequelize, connect } = require('./db');
-const { User, FiatLog, UserBalance, DepositOrder, MintTask, SponsorLog } = sequelize.models;
+const { User, FiatLog, UserBalance, DepositOrder, MintTask, WalletUser } = sequelize.models;
 const { Op } = require('sequelize');
 const { formatDateDime, writeToCsv, formatDate, currentMonth, lastMonth } = require('./utils');
 const _ = require('lodash');
 const { conflux } = require('./cfx.js');
-const { default: axios } = require('axios');
-const { Drip } = require('js-conflux-sdk');
-
-// connect();
-
-const SPONSOR_ADDRESS = 'cfx:aakk91pj0pzcbrjkefttdf27t072f4u8pj27znjbw0';
+const fs = require('fs');
 
 async function main() {
     // await fiatLog();
     // await userBalance();
     // await userBalanceByDay();
     // await rabbitShot();
-
-    // let result = await getUserTx(SPONSOR_ADDRESS);
-    await fetchAndSaveSponsorLog(SPONSOR_ADDRESS);
+    await exportMintTask('cfxtest:acgraybn1g1upesed09g96vxev79sdhmxjmz7bxzyy');
 
     console.log('Finished');
 }
@@ -194,54 +187,33 @@ function sumDepositAndCharge(items) {
     return {deposit, charge};
 }
 
-async function _getUserTx(account, skip, limit) {
-    console.log('fetching', account, skip, limit);
-    const HOST = 'https://api.confluxscan.net';
-    const { data } = await axios.get(`${HOST}/account/transactions?account=${account}&from=${account}&skip=${skip}&limit=${limit}`);
-
-    return data.data;
-}
-
-async function getUserTx(account) {
-    let skip = 0;
-    let limit = 50;
-    let txs = [];
-    // Get 'account' tx from Scan API
-    while (true) {
-        let {list, total} = await _getUserTx(account, skip, limit);
-        txs = txs.concat(list);
-        if (txs.length >= total) break;
-        skip += limit;
-    }
-    // Get tx detail Info from RPC
-    for(let i in txs) {
-        let tx = txs[i];
-        let txInfo = await conflux.cfx.getTransactionByHash(tx.hash);
-        txs[i].txInfo = txInfo;
-    }
-    return txs;
-}
-
-async function fetchAndSaveSponsorLog(account) {
-    const txs = await getUserTx(account);
-    const sponsorContract = conflux.InternalContract('SponsorWhitelistControl');
-
-    for(let tx of txs) {
-        let value = new Drip(tx.value);
-        let cfxCount = value.toCFX();
-        let methodArg = sponsorContract.abi.decodeData(tx.txInfo.data);
-        const contract = methodArg.object.contractAddr;
-        let meta = {
-            sponsor_at: new Date(tx.timestamp * 1000),
-            type: tx.method.startsWith('setSponsorForCollateral') ? 2 : 1,
-            value: parseInt(cfxCount),
-            nonce: parseInt(tx.nonce),
-            hash: tx.hash,
-            from: tx.from,
-            to: tx.to,
+async function exportMintTask(contract) {
+    let items = await MintTask.findAll({
+        where: {
             contract,
-            created_at: new Date(),
-        };
-        await SponsorLog.create(meta);
+            status: 1,
+            deleted_at: null,
+        }
+    });
+
+    fs.writeFileSync('./mint_tasks.json', JSON.stringify(items, null, '\t'));
+}
+
+async function getAddressPhoneInfo() {
+    const items = require('./mint_tasks.json');
+    for(let i in items) {
+        let info = await WalletUser.findOne({
+            where: {
+                address: items[i].mint_to
+            }
+        });
+        items[i].phone = info ? info.phone : '';
     }
+    writeToCsv('changandao.csv', items.map(item => ({
+        phone: item.phone,
+        address: item.mint_to,
+        token_id: item.token_id,
+        created_at: item.created_at,
+        hash: item.hash
+    })));
 }
