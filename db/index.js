@@ -6,6 +6,7 @@ const defineUserBalance = require('./UserBalance');
 const defineDepositOrder = require('./DepositOrder');
 const defineMintTask = require('./MintTask');
 const defineSponsorLog = require('./SponsorLog');
+const defineWalletUser = require('./WalletUser');
 
 const sequelize = new Sequelize(db.database, db.user, db.password, {
     host: db.host,
@@ -20,6 +21,7 @@ defineUserBalance(sequelize);
 defineDepositOrder(sequelize);
 defineMintTask(sequelize);
 defineSponsorLog(sequelize);
+defineWalletUser(sequelize);
 
 async function connect() {
     try {
