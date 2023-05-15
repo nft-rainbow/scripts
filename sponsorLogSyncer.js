@@ -11,7 +11,11 @@ main();
 
 async function main() {
     setInterval(async function() {
-        await fetchAndSaveSponsorLog(SPONSOR_ADDRESS);
+        try {
+            await fetchAndSaveSponsorLog(SPONSOR_ADDRESS);
+        }catch(e) {
+            console.log('fetchAndSaveSponsorLog error', e);
+        }
     }, 5 * 60 * 1000);
 }
 
