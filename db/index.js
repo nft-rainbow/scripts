@@ -13,6 +13,7 @@ const sequelize = new Sequelize(db.database, db.user, db.password, {
     port: db.port,
     dialect: 'mysql',
     logging: false,
+    timezone: 'Asia/Shanghai',
 });
 
 defineUser(sequelize);
