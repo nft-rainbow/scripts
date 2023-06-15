@@ -14,6 +14,15 @@ module.exports = function(sequelize) {
         meta: {
             type: DataTypes.JSON,
         },
+        order_no: {
+            type: DataTypes.STRING,
+        },
+        balance: {
+            type: DataTypes.INTEGER,  // will updated to decimal
+        },
+        deleted_at: {
+          type: DataTypes.DATE
+        },
         created_at: {
           type: DataTypes.DATE
         },

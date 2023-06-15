@@ -11,7 +11,8 @@ async function main() {
     // await userBalance();
     // await userBalanceByDay();
     // await rabbitShot();
-    await exportMintTask('cfxtest:acgraybn1g1upesed09g96vxev79sdhmxjmz7bxzyy');
+    // await exportMintTask('cfxtest:acgraybn1g1upesed09g96vxev79sdhmxjmz7bxzyy');
+    await completeBalance(1);
 
     console.log('Finished');
 }
@@ -216,4 +217,22 @@ async function getAddressPhoneInfo() {
         created_at: item.created_at,
         hash: item.hash
     })));
+}
+
+// 补充 fiat_log 的 balance 字段
+async function completeBalance(user_id) {
+    const fiatLogs = await FiatLog.findAll({
+        where: {
+            order_no: null,
+            user_id,
+        },
+        order: ['id', 'ASC']
+    });
+    let balance = 0;
+    for(let log of fiatLogs) {
+        balance += log.amount;
+        log.balance = balance;
+        console.log(log.amount, log.balance);
+        // await log.save();
+    }
 }
