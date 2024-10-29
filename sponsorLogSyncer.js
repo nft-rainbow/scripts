@@ -46,6 +46,7 @@ async function fetchAndSaveSponsorLog(account) {
         }
 
         try {
+            console.log(new Date(), 'Save sponsor log', meta.nonce);
             await SponsorLog.create(meta);
         } catch(e) {
             if (e.message !== 'Validation error') {
