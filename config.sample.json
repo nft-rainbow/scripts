@@ -1,4 +1,6 @@
 {
+    "rpc": "https://main.confluxrpc.com",
+    "sponsorAddress": "cfx:aakk91pj0pzcbrjkefttdf27t072f4u8pj27znjbw0",
     "db": {
         "host": "localhost",
         "port": 3306,
