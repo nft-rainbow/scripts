@@ -57,7 +57,7 @@ async function fetchAndSaveSponsorLog(account) {
     }
 }
 
-async function getUserTx(account, limit = 200) {
+async function getUserTx(account, limit = 100) {
     let skip = 0;
     let txs = [];
     // Get 'account' tx from Scan API
