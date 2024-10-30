@@ -33,7 +33,8 @@ async function fetchAndSaveSponsorLog(account) {
 
     let blockChainLastNonce = await conflux.cfx.getNextNonce(account);
     console.log(new Date(), 'BlockChain last nonce:', blockChainLastNonce);
-    if (dbLastNonce + 1 == blockChainLastNonce) return; // no need to update
+    
+    if (BigInt(dbLastNonce + 1) == blockChainLastNonce) return; // no need to update
 
     const txs = await getAllUserTx(account, skip = dbLastNonce, 100, 'ASC');
 
