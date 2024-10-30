@@ -46,7 +46,7 @@ async function fetchAndSaveSponsorLog(account) {
 async function createSponsorLogForTx(tx) {
     let nonce = parseInt(tx.nonce);
 
-    let exist = await SponsorLog.findOne({ where: { nonce: meta.nonce } });
+    let exist = await SponsorLog.findOne({ where: { nonce } });
     if (exist) return false;
 
     let value = new Drip(tx.value);
